@@ -40,6 +40,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.WithModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.WithModulation;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
@@ -2496,6 +2498,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaCollectingBarrierStep<>(this.asAdmin(), (Consumer) barrierConsumer, Integer.MAX_VALUE));
     }
 
+    //// WITH-MODULATORS
+
+    /**
+     * Provides a configuration to a step in the form of a {@link WithModulation}. The step configuration must be
+     * step specific and therefore a configuration could be supplied that is not known to be valid until execution.
+     *
+     * @param config the configuration to apply to a step
+     * @return the traversal with a modulated step
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#with-step" target="_blank">Reference Documentation - With Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> with(final WithModulation config) {
+        this.asAdmin().getBytecode().addStep(Symbols.with, config);
+        ((WithModulating) this.asAdmin().getEndStep()).modulateWith(config);
+        return this;
+    }
 
     //// BY-MODULATORS
 
@@ -2804,6 +2822,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String times = "times";
         public static final String as = "as";
         public static final String option = "option";
+        public static final String with = "with";
 
     }
 }
