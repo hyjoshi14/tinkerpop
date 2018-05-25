@@ -31,7 +31,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.StepConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.DefaultStepConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
@@ -129,7 +131,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(List.class, "List");
                     put(Set.class, "Set");
 
-                    // Tinkerpop Graph objects
+                    // TinkerPop Graph objects
                     put(Lambda.class, "Lambda");
                     put(Vertex.class, "Vertex");
                     put(Edge.class, "Edge");
@@ -184,6 +186,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             GraphFilterStrategy.class,
                             VertexProgramStrategy.class
                     ).forEach(strategy -> put(strategy, strategy.getSimpleName()));
+                    Arrays.asList(DefaultStepConfiguration.class).forEach(stepConfiguration-> put(stepConfiguration, stepConfiguration.getSimpleName()));
                 }});
 
         /**
@@ -234,6 +237,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Bytecode.Binding.class, new TraversalSerializersV3d0.BindingJacksonSerializer());
             addSerializer(Traverser.class, new TraversalSerializersV3d0.TraverserJacksonSerializer());
             addSerializer(TraversalStrategy.class, new TraversalSerializersV3d0.TraversalStrategyJacksonSerializer());
+            addSerializer(StepConfiguration.class, new TraversalSerializersV3d0.StepConfigurationJacksonSerializer());
 
             /////////////////////// DESERIALIZERS ////////////////////////////
 
@@ -300,6 +304,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     GraphFilterStrategy.class,
                     VertexProgramStrategy.class
             ).forEach(strategy -> addDeserializer(strategy, new TraversalSerializersV3d0.TraversalStrategyProxyJacksonDeserializer(strategy)));
+            Arrays.asList(DefaultStepConfiguration.class).forEach(stepConf -> addDeserializer(stepConf, new TraversalSerializersV3d0.StepConfigurationProxyJacksonDeserializer(stepConf)));
         }
 
         public static Builder build() {
@@ -398,6 +403,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             GraphFilterStrategy.class,
                             VertexProgramStrategy.class
                     ).forEach(strategy -> put(strategy, strategy.getSimpleName()));
+                    Arrays.asList(DefaultStepConfiguration.class).forEach(stepConfiguration-> put(stepConfiguration, stepConfiguration.getSimpleName()));
                 }});
 
         /**
@@ -445,6 +451,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Bytecode.Binding.class, new TraversalSerializersV2d0.BindingJacksonSerializer());
             addSerializer(Traverser.class, new TraversalSerializersV2d0.TraverserJacksonSerializer());
             addSerializer(TraversalStrategy.class, new TraversalSerializersV2d0.TraversalStrategyJacksonSerializer());
+            addSerializer(StepConfiguration.class, new TraversalSerializersV2d0.StepConfigurationJacksonSerializer());
 
             /////////////////////// DESERIALIZERS ////////////////////////////
 
@@ -506,6 +513,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     GraphFilterStrategy.class,
                     VertexProgramStrategy.class
             ).forEach(strategy -> addDeserializer(strategy, new TraversalSerializersV2d0.TraversalStrategyProxyJacksonDeserializer(strategy)));
+            Arrays.asList(DefaultStepConfiguration.class).forEach(stepConf -> addDeserializer(stepConf, new TraversalSerializersV2d0.StepConfigurationProxyJacksonDeserializer(stepConf)));
         }
 
         public static Builder build() {

@@ -29,6 +29,7 @@ import java.lang.reflect.Modifier
 def toPythonMap = ["global": "global_",
                    "as": "as_",
                    "in": "in_",
+                   "with": "with_",
                    "and": "and_",
                    "or": "or_",
                    "is": "is_",

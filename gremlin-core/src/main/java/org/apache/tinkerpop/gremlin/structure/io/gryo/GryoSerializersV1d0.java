@@ -18,11 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.DefaultStepConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -44,7 +47,10 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class holds serializers for graph-based objects such as vertices, edges, properties, and paths. These objects
@@ -281,4 +287,30 @@ public final class GryoSerializersV1d0 {
             return new DefaultRemoteTraverser<>(o, input.readLong());
         }
     }
+
+//    public final static class DefaultStepConfigurationSerializer implements SerializerShim<DefaultStepConfiguration> {
+//        @Override
+//        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final DefaultStepConfiguration stepConfig) {
+//            final LinkedHashMap<String,List<Object>> m = new LinkedHashMap<>();
+//            final Configuration conf = stepConfig.getConfiguration();
+//            final Iterator<String> keys = conf.getKeys();
+//            while (keys.hasNext()) {
+//                final String key = keys.next();
+//                final List<Object> args = new ArrayList<>();
+//
+//                // gryo doesn't (for whatever reason that i can't remember) coerce traversals to bytecode so if a
+//                // step configuration has a traversal it needs to be coerced here. not sure........
+//                conf.getList(key).forEach(x -> args.add(x instanceof Traversal ? ((Traversal) x).asAdmin().getBytecode() : x));
+//                m.put(key, args);
+//            }
+//
+//            kryo.writeObject(output, m);
+//        }
+//
+//        @Override
+//        public <I extends InputShim> DefaultStepConfiguration read(final KryoShim<I, ?> kryo, final I input, final Class<DefaultStepConfiguration> clazz) {
+//            final LinkedHashMap<String,List<Object>> m = kryo.readObject(input, LinkedHashMap.class);
+//            return DefaultStepConfiguration.
+//        }
+//    }
 }

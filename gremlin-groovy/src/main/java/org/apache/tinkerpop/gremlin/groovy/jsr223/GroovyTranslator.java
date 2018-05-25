@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.DefaultStepConfiguration;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StepConfigurationProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -182,7 +184,12 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                         "Collections.emptyMap()," +
                         convertToString(vertexProperty.element()) + ")";
             }
-        } else if (object instanceof Lambda) {
+        } else if (object instanceof DefaultStepConfiguration) {
+            return DefaultStepConfiguration.class.getName() + ".create(new org.apache.commons.configuration.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(((DefaultStepConfiguration) object).getConfiguration())) + "))";
+        } else if (object instanceof StepConfigurationProxy) {
+            final StepConfigurationProxy proxy = (StepConfigurationProxy) object;
+            return proxy.getStepConfigurationClass().getCanonicalName() + ".create(new org.apache.commons.configuration.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + "))";
+        }else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript().trim();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof TraversalStrategyProxy) {

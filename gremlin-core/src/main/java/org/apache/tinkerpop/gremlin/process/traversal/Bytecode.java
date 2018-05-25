@@ -19,6 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.StepConfiguration;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.DefaultStepConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -276,7 +278,19 @@ public final class Bytecode implements Cloneable, Serializable {
         //
         if (argument instanceof Traversal)
             return ((Traversal) argument).asAdmin().getBytecode();
-        else if (argument instanceof Map) {
+        else if (argument instanceof StepConfiguration) {
+            final StepConfiguration stepConfig = (StepConfiguration) argument;
+            final LinkedHashMap<String,List<Object>> m = new LinkedHashMap<>();
+            final org.apache.commons.configuration.Configuration conf = stepConfig.getConfiguration();
+            final java.util.Iterator<String> keys = conf.getKeys();
+            while (keys.hasNext()) {
+                final String key = keys.next();
+                final List<Object> args = new ArrayList<>();
+                conf.getList(key).forEach(x -> args.add(convertArgument(x, true)));
+                m.put(key, args);
+            }
+            return new DefaultStepConfiguration(m);
+        } else if (argument instanceof Map) {
             final Map<Object, Object> map = new LinkedHashMap<>(((Map) argument).size());
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
                 map.put(convertArgument(entry.getKey(), true), convertArgument(entry.getValue(), true));

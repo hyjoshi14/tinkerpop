@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.DefaultStepConfiguration;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StepConfigurationProxy;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -332,6 +334,14 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
         for (P p : variantsOfP) {
             assertEquals(p, serializeDeserialize(mapper, p, P.class));
         }
+    }
+
+    @Test
+    public void shouldHandleWithDefaultStepConfiguration() throws Exception {
+        final DefaultStepConfiguration stepConfig = new DefaultStepConfiguration("setInterval", 1000);
+        final StepConfigurationProxy deserStepConfig = serializeDeserializeAuto(mapper, stepConfig);
+        assertEquals(1000, deserStepConfig.getConfiguration().getInt("setInterval"));
+        assertEquals(DefaultStepConfiguration.class, deserStepConfig.getStepConfigurationClass());
     }
 
     // Class needs to be defined as statics as it's a nested class.

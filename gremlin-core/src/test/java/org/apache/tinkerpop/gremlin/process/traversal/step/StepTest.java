@@ -47,7 +47,7 @@ public abstract class StepTest {
     }
 
     @Test
-    public void testEquality() {
+    public void shouldValidateEqualityExpectations() {
         final List<Step> instances1 = this.getStepInstances();
         final List<Step> instances2 = this.getStepInstances();
         for (int i = 0; i < instances1.size(); i++) {

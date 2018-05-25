@@ -27,6 +27,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.StepConfiguration;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StepConfigurationProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -47,7 +49,6 @@ import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -229,6 +230,23 @@ final class TraversalSerializersV3d0 {
                 throws IOException {
             jsonGenerator.writeStartObject();
             for (final Map.Entry<Object, Object> entry : ConfigurationConverter.getMap(traversalStrategy.getConfiguration()).entrySet()) {
+                jsonGenerator.writeObjectField((String) entry.getKey(), entry.getValue());
+            }
+            jsonGenerator.writeEndObject();
+        }
+    }
+
+    final static class StepConfigurationJacksonSerializer extends StdScalarSerializer<StepConfiguration> {
+
+        public StepConfigurationJacksonSerializer() {
+            super(StepConfiguration.class);
+        }
+
+        @Override
+        public void serialize(final StepConfiguration stepConfiguration, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            jsonGenerator.writeStartObject();
+            for (final Map.Entry<Object, Object> entry : ConfigurationConverter.getMap(stepConfiguration.getConfiguration()).entrySet()) {
                 jsonGenerator.writeObjectField((String) entry.getKey(), entry.getValue());
             }
             jsonGenerator.writeEndObject();
@@ -482,6 +500,20 @@ final class TraversalSerializersV3d0 {
         @Override
         public TraversalStrategyProxy<T> createObject(final Map<String, Object> data) {
             return new TraversalStrategyProxy<>(this.clazz, new MapConfiguration(data));
+        }
+    }
+
+    final static class StepConfigurationProxyJacksonDeserializer<T extends StepConfiguration> extends AbstractObjectDeserializer<StepConfigurationProxy> {
+        private final Class<T> clazz;
+
+        public StepConfigurationProxyJacksonDeserializer(final Class<T> clazz) {
+            super(StepConfigurationProxy.class);
+            this.clazz = clazz;
+        }
+
+        @Override
+        public StepConfigurationProxy<T> createObject(final Map<String, Object> data) {
+            return new StepConfigurationProxy<>(this.clazz, new MapConfiguration(data));
         }
     }
 }

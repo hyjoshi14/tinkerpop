@@ -25,7 +25,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.StepConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.DefaultStepConfiguration;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StepConfigurationProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -119,6 +122,16 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             final Configuration configuration = ((TraversalStrategyProxy) object).getConfiguration();
             configuration.getKeys().forEachRemaining(key -> map.put(key, translateObject(configuration.getProperty(key))));
             return invokeStrategyCreationMethod(object, map);
+        } else if (object instanceof DefaultStepConfiguration) {
+            final Map<String, Object> map = new LinkedHashMap<>();
+            final Configuration configuration = ((DefaultStepConfiguration) object).getConfiguration();
+            configuration.getKeys().forEachRemaining(key -> map.put(key, translateObject(configuration.getProperty(key))));
+            return invokeStepConfigurationCreationMethod(object, map);
+        }else if (object instanceof StepConfigurationProxy) {
+            final Map<String, Object> map = new LinkedHashMap<>();
+            final Configuration configuration = ((StepConfigurationProxy) object).getConfiguration();
+            configuration.getKeys().forEachRemaining(key -> map.put(key, translateObject(configuration.getProperty(key))));
+            return invokeStepConfigurationCreationMethod(object, map);
         } else if (object instanceof Map) {
             final Map<Object, Object> map = object instanceof Tree ?
                     new Tree() :
@@ -179,6 +192,30 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             return map.isEmpty() ?
                     methodCache.get("instance").invoke(null) :
                     methodCache.get("create").invoke(null, new MapConfiguration(map));
+        } catch (final InvocationTargetException | IllegalAccessException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    private Object invokeStepConfigurationCreationMethod(final Object delegate, final Map<String, Object> map) {
+        final Class<?> stepConfigurationClass = delegate instanceof DefaultStepConfiguration ? delegate.getClass() : ((StepConfigurationProxy) delegate).getStepConfigurationClass();
+        final Map<String, Method> methodCache = localMethodCache.computeIfAbsent(stepConfigurationClass, k -> {
+            final Map<String, Method> cacheEntry = new HashMap<>();
+
+            try {
+                cacheEntry.put("create", stepConfigurationClass.getMethod("create", Configuration.class));
+            } catch (NoSuchMethodException ignored) {
+                // nothing - the StepConfiguration may not be constructed this way
+            }
+
+            if (cacheEntry.isEmpty())
+                throw new IllegalStateException(String.format("%s does can only be constructed with create(Configuration)", stepConfigurationClass.getSimpleName()));
+
+            return cacheEntry;
+        });
+
+        try {
+            return methodCache.get("create").invoke(null, new MapConfiguration(map));
         } catch (final InvocationTargetException | IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
